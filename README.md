@@ -26,7 +26,11 @@ php artisan key:generate
 ```bash
 php artisan migrate --seed
 ```
-7. Start the server
+7. Run jwt secret key
+```bash
+php artisan jwt:secret
+```
+8. Start the server
 ```bash
 php artisan serve
 ```
