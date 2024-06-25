@@ -45,7 +45,7 @@ class BuildingPolicy
      */
     public function delete(User $user, Building $building): bool
     {
-        //
+        return $user->role === User::IS_OWNER && $user->id === $building->user_id;
     }
 
     /**

@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rent_details', function (Blueprint $table) {
+        Schema::create('transaction_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('rent_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('room_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('transaction_id')->constrained();
+            $table->unsignedBigInteger('building_id');
+            $table->unsignedBigInteger('room_id');
+            $table->string('room_name');
+            $table->integer('price');
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('duration');
@@ -28,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rent_details');
+        Schema::dropIfExists('transaction_details');
     }
 };

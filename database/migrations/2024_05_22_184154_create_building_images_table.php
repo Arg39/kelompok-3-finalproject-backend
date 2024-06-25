@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('building_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('building_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('building_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('image');
             $table->timestamps();
         });
@@ -22,7 +22,7 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    
+
     public function down(): void
     {
         Schema::dropIfExists('building_images');

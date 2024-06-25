@@ -6,6 +6,7 @@ use App\Models\Room;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RoomResource;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -45,6 +46,7 @@ class RoomController extends Controller
             'capacity' => 'required',
             'price' => 'required|integer',
             'description' => 'string',
+            'is_available' => 'nullable|boolean',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -137,8 +139,20 @@ class RoomController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Room $room)
     {
-        //
+        if (Gate::denies('delete', $room)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $room->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Room deleted successfully',
+        ]);
     }
 }
