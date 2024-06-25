@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Carbon\Carbon;
 
 class RegionSeeder extends Seeder
 {
@@ -14,15 +14,16 @@ class RegionSeeder extends Seeder
     public function run(): void
     {
         DB::unprepared(file_get_contents('database/sql/wilayah_indonesia.sql'));
+        $timestamp = Carbon::now();
 
         DB::table('provinces')->update([
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
         ]);
 
-        DB::table('cities')->update([
-            'created_at' => now(),
-            'updated_at' => now(),
+        DB::table('regencies')->update([
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
         ]);
     }
 }

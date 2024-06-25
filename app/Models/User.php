@@ -71,19 +71,4 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-
-    public function building()
-    {
-        return $this->hasOne(Building::class);
-    }
-
-    public function rooms()
-    {
-        return $this->hasMany(Room::class);
-    }
-
-    public function rents()
-    {
-        return $this->hasMany(Rent::class);
-    }
 }

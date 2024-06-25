@@ -2,65 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Building extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'building_type_id',
-        'city_id',
         'name',
-        'slug',
         'address',
-        'description'
+        'description',
+        'regency_id', // tambahkan kolom ini ke fillable jika Anda menggunakan mass assignment
     ];
 
-    public function getRouteKeyName()
+    public function regency()
     {
-        return 'slug';
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($building) {
-            $building->slug = Str::slug($building->name);
-        });
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function buildingType()
-    {
-        return $this->belongsTo(BuildingType::class);
-    }
-
-    public function city()
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function buildingImages()
-    {
-        return $this->hasMany(BuildingImage::class);
-    }
-
-    public function rooms()
-    {
-        return $this->hasMany(Room::class);
-    }
-
-    public function getLowestRoomPrice()
-    {
-        return $this->rooms->min('price');
+        return $this->belongsTo(Regency::class, 'regency_id', 'id');
     }
 }

@@ -4,19 +4,17 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class RegionResource extends JsonResource
 {
     // Define properties
     public $status;
     public $message;
-    public $access_token;
     public $errors;
 
-    public function __construct($status, $message, $resource = null, $access_token = null, $errors = null) {
+    public function __construct($status, $message, $resource = null, $errors = null) {
         parent::__construct($resource);
         $this->status = $status;
         $this->message = $message;
-        $this->access_token = $access_token;
         $this->errors = $errors;
     }
 
@@ -28,7 +26,7 @@ class UserResource extends JsonResource
     public function toArray($request): array
     {
         $user = $this->resource ? [
-            'id' => $this->id,
+            'id_province' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'role' => $this->role,

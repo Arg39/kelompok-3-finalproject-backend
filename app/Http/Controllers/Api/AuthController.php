@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -22,7 +24,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return new UserResource(false, 'Validation errors', null, null, $validator->errors());
         }
 
         $user = User::create([
@@ -34,20 +36,10 @@ class AuthController extends Controller
 
         $token = JWTAuth::fromUser($user);
 
-        return response()->json([
-            'meta' => [
-                'code' => 200,
-                'status' => 'success',
-                'message' => 'User created successfully!',
-            ],
-            'data' => [
-                'user' => $user,
-                'access_token' => [
-                    'token' => $token,
-                    'type' => 'Bearer',
-                    'expires_in' => JWTAuth::factory()->getTTL() * 1440, 
-                ],
-            ],
+        return new UserResource(true, 'User created successfully!', $user, [
+            'token' => $token,
+            'type' => 'Bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60, 
         ]);
     }
 
@@ -60,7 +52,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return new UserResource(false, 'Validation errors', null, null, $validator->errors());
         }
 
         // Attempt to authenticate the user and generate a token
@@ -68,24 +60,14 @@ class AuthController extends Controller
         $token = JWTAuth::attempt($credentials);
 
         if (!$token) {
-            return response()->json(['errors' => ['message' => 'Invalid credentials']], 401);
+            return new UserResource(false, 'Invalid credentials', null, null, ['message' => 'Invalid credentials']);
         }
 
         // Return the response as JSON
-        return response()->json([
-            'meta' => [
-                'code' => 200,
-                'status' => 'success',
-                'message' => 'Login successful',
-            ],
-            'data' => [
-                'user' => auth()->user(),
-                'access_token' => [
-                    'token' => $token,
-                    'type' => 'Bearer',
-                    'expires_in' => JWTAuth::factory()->getTTL() * 60,
-                ],
-            ],
+        return new UserResource(true, 'Login successful', auth()->user(), [
+            'token' => $token,
+            'type' => 'Bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ]);
     }
 
@@ -106,7 +88,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return response()->json(['errors' => ['message' => 'Failed to log out']], 500);
+        return new UserResource(false, 'Failed to log out', null, null, ['message' => 'Failed to log out']);
     }
 
     public function update($id, Request $request)
@@ -126,7 +108,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return new UserResource(false, 'Validation errors', null, null, $validator->errors());
         }
 
         if ($request->has('name')) $user->name = $request->input('name');
@@ -138,13 +120,10 @@ class AuthController extends Controller
         if ($request->has('address')) $user->address = $request->input('address');
         if ($request->has('description')) $user->description = $request->input('description');
         if ($request->has('photo')) {
-            if ($user->has("photo")) {
-                $existingPhoto = $user->photo;
-                if($existingPhoto) {
-                    $existingPhotoPath = public_path('storage/user-photo' . $existingPhoto);
-                    if (File::exists($existingPhotoPath)) {
-                        File::delete($existingPhotoPath);
-                    }
+            if ($user->photo) {
+                $existingPhotoPath = public_path('storage/user-photo/' . $user->photo);
+                if (File::exists($existingPhotoPath)) {
+                    File::delete($existingPhotoPath);
                 }
             }
             $filePathPhoto = $request->file("photo")->store('user-photo', 'public');
@@ -153,15 +132,27 @@ class AuthController extends Controller
 
         $user->save();
 
-        return response()->json([
-            'meta' => [
-                'code' => 200,
-                'status' => 'success',
-                'message' => 'User updated successfully!',
-            ],
-            'data' => [
-                'user' => $user,
-            ],
-        ]);
+        return new UserResource(true, 'User updated successfully!', $user, null);
+    }
+
+    public function me(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return response()->json(['error' => 'Token not provided'], 401);
+        }
+
+        try {
+            $user = Auth::setToken($token)->user();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return new UserResource(true, 'User information', $user, null);
     }
 }
