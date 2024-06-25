@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('rent_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('rent_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
-            $table->foreignId('room_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('rent_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('room_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('duration');

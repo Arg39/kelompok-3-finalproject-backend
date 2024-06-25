@@ -24,7 +24,7 @@ class BuildingController extends Controller
             $query->where('name', 'like', '%'.$request->search.'%');
         })->orWhereHas('city.province', function($query) use ($request) {
             $query->where('name', 'like', '%'.$request->search.'%');
-        })->orWhere('name', 'like', '%'.$request->search.'%')->get();
+        })->orWhere('name', 'like', '%'.$request->search.'%')->paginate(10);
 
         if ($buildings->isEmpty()) {
             return response()->json([
@@ -33,10 +33,7 @@ class BuildingController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => BuildingResource::collection($buildings)
-        ]);
+        return BuildingResource::collection($buildings);
     }
 
     /**
@@ -136,13 +133,13 @@ class BuildingController extends Controller
                 'message' => $validator->errors()
             ], 422);
         }
-        
+
         $building->update($validator->validate());
-        
+
         $building->slug = Str::slug($building->name);
-        
+
         $building->update();
-        
+
         if ($request->hasFile('images')) {
             // Delete old images from storage
             foreach ($building->buildingImages as $image) {
@@ -156,7 +153,7 @@ class BuildingController extends Controller
                 $building->buildingImages()->create(['image' => $path]);
             }
         }
-        
+
         return response()->json([
             'status' => 'success',
             'data' => new BuildingResource($building)
@@ -166,14 +163,26 @@ class BuildingController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Building $building)
     {
-        //
+        if (Gate::denies('delete', $building)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not allowed to delete this building'
+            ], 403);
+        }
+
+        $building->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Building deleted successfully'
+        ]);
     }
 
     public function getBuildingByCity(City $city)
     {
-        $buildings = $city->buildings()->get();
+        $buildings = $city->buildings()->paginate(10);
 
         if ($buildings->isEmpty()) {
             return response()->json([
@@ -182,15 +191,12 @@ class BuildingController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => BuildingResource::collection($buildings)
-        ]);
+        return BuildingResource::collection($buildings);
     }
 
     public function getBuildingByProvince(Province $province)
     {
-        $buildings = $province->buildings()->get();
+        $buildings = $province->buildings()->paginate(10);
 
         if ($buildings->isEmpty()) {
             return response()->json([
@@ -199,9 +205,6 @@ class BuildingController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => BuildingResource::collection($buildings)
-        ]);
+        return BuildingResource::collection($buildings);
     }
 }

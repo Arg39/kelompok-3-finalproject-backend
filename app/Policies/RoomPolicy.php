@@ -45,7 +45,7 @@ class RoomPolicy
      */
     public function delete(User $user, Room $room): bool
     {
-        //
+        return $user->id === $room->building->user_id && $user->role === User::IS_OWNER;
     }
 
     /**

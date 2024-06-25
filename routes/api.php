@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\RoleMiddleware;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Api\RentController;
 use App\Http\Controllers\Api\AuthController;
@@ -27,17 +26,15 @@ Route::get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::prefix('list')->group(function () {
-    Route::get('/cities', [RegionController::class, 'city'])->name('city.list');
-    Route::get('/provinces', [RegionController::class, 'province'])->name('province.list');
-});
+Route::get('/city', [RegionController::class, 'city'])->name('city');
+Route::get('/province', [RegionController::class, 'province'])->name('province');
 
 Route::get('/building/city/{city}', [BuildingController::class, 'getBuildingByCity'])->name('building.city');
 Route::get('/building/province/{province}', [BuildingController::class, 'getBuildingByProvince'])->name('building.province');
 Route::apiResource('building', BuildingController::class);
 
-Route::apiResource('room', RoomController::class);
-Route::apiResource('rent', RentController::class);
+Route::apiResource('room', RoomController::class)->except(['create', 'edit', 'update']);
+Route::apiResource('rent', RentController::class)->except(['store', 'create', 'edit']);
 
 Route::middleware(['auth:api'])->group(function () {
     Route::get('/me', [UserController::class, 'me']);

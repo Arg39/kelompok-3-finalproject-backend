@@ -45,7 +45,7 @@ class RentPolicy
      */
     public function delete(User $user, Rent $rent): bool
     {
-        //
+        return $user->id === $rent->user_id;
     }
 
     /**
