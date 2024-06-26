@@ -6,14 +6,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class RegionResource extends JsonResource
 {
-    // Define properties
     public $status;
+    public $code;
     public $message;
     public $errors;
 
-    public function __construct($status, $message, $resource = null, $errors = null) {
+    public function __construct($status, $code, $message, $resource = null, $errors = null) {
         parent::__construct($resource);
         $this->status = $status;
+        $this->code = $code;
         $this->message = $message;
         $this->errors = $errors;
     }
@@ -25,36 +26,44 @@ class RegionResource extends JsonResource
      */
     public function toArray($request): array
     {
-        $user = $this->resource ? [
-            'id_province' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'role' => $this->role,
-            'phone_number' => $this->phone_number,
-            'gender' => $this->gender,
-            'birthdate' => $this->birthdate,
-            'address' => $this->address,
-            'description' => $this->description,
-            'photo' => $this->photo,
-        ] : null;
-
-        $response = [
-            'meta' => [
-                'code' => 200,
-                'status' => $this->status,
-                'message' => $this->message,
-            ],
-            'data' => $user ? ['user' => $user] : null,
-        ];
-
-        if ($this->access_token) {
-            $response['data']['access_token'] = $this->access_token;
+        if ($this->resource instanceof \Illuminate\Support\Collection) {
+            // Case: Data provinsi
+            return [
+                'meta' => [
+                    'status' => $this->status,
+                    'code' => $this->code,
+                    'message' => $this->message,
+                ],
+                'data' => $this->resource->map(function ($province) {
+                    return [
+                        'id' => $province->id,
+                        'name' => $province->name,
+                    ];
+                }),
+                'errors' => $this->errors,
+            ];
+        } else {
+            // Case: Data kabupaten (regencies dari sebuah provinsi)
+            return [
+                'meta' => [
+                    'status' => $this->status,
+                    'code' => $this->code,
+                    'message' => $this->message,
+                ],
+                'data' => [
+                    'id' => $this->id,
+                    'name' => $this->name,
+                    'regencies' => $this->when(isset($this->regencies), function () {
+                        return $this->regencies->map(function ($regency) {
+                            return [
+                                'id' => $regency->id,
+                                'name' => $regency->name,
+                            ];
+                        });
+                    }),
+                ],
+                'errors' => $this->errors,
+            ];
         }
-
-        if ($this->errors) {
-            $response['errors'] = $this->errors;
-        }
-
-        return $response;
     }
 }

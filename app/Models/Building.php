@@ -11,12 +11,18 @@ class Building extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
+        'regency_id',
         'name',
+        'type',
         'address',
         'description',
-        'regency_id', // tambahkan kolom ini ke fillable jika Anda menggunakan mass assignment
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
     public function regency()
     {
         return $this->belongsTo(Regency::class, 'regency_id', 'id');
