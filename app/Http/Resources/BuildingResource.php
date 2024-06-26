@@ -51,14 +51,14 @@ class BuildingResource extends JsonResource
                 'data' => $this->transformBuilding($data),
                 'errors' => $this->errors,
             ];
-        } elseif (is_null($data)) { 
+        } elseif (is_null($data)) {
             return [
                 'meta' => [
                     'status' => $this->status,
                     'code' => $this->code,
                     'message' => $this->message,
                 ],
-                'data' => null, 
+                'data' => null,
                 'errors' => $this->errors,
             ];
         } else {
@@ -80,10 +80,7 @@ class BuildingResource extends JsonResource
             'type' => $building->type,
             'address' => $building->address,
             'description' => $building->description,
-            'regency' => [
-                'id' => $building->regency->id,
-                'name' => $building->regency->name,
-            ],
+            'regency' => $building->regency, // Since regency is now a string
         ];
     }
 }

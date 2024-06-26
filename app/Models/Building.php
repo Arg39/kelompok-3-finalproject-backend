@@ -12,7 +12,7 @@ class Building extends Model
 
     protected $fillable = [
         'user_id',
-        'regency_id',
+        'regency',
         'name',
         'type',
         'address',

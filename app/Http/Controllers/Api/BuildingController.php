@@ -26,7 +26,7 @@ class BuildingController extends Controller
     public function store(Request $request, $user_id)
     {
         $validator = Validator::make($request->all(), [
-            'regency_id' => 'required|exists:regencies,id',
+            'regency' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'type' => 'required|in:villa,hotel,apartment',
             'address' => 'required|string|max:255',
@@ -40,7 +40,7 @@ class BuildingController extends Controller
         try {
             $building = Building::create([
                 'user_id' => $user_id,
-                'regency_id' => $request->input('regency_id'),
+                'regency' => $request->input('regency'),
                 'name' => $request->input('name'),
                 'type' => $request->input('type'),
                 'address' => $request->input('address'),
@@ -57,7 +57,6 @@ class BuildingController extends Controller
     {
         try {
             $building = Building::findOrFail($id);
-            $building->load('regency');
             return new BuildingResource(true, 200, 'Data building berhasil diperlihatkan', $building);
         } catch (\Exception $e) {
             return new BuildingResource(false, 500, 'Terjadi kesalahan saat mengambil data building', null, $e->getMessage());
@@ -77,12 +76,10 @@ class BuildingController extends Controller
     public function update($id, Request $request)
     {
         try {
-            // Find the building by its ID
             $building = Building::findOrFail($id);
 
-            // Validate the incoming request data
             $validator = Validator::make($request->all(), [
-                'regency_id' => 'sometimes|required|exists:regencies,id',
+                'regency' => 'sometimes|required|string|max:255',
                 'name' => 'sometimes|required|string|max:255',
                 'type' => 'sometimes|required|in:villa,hotel,apartment',
                 'address' => 'sometimes|required|string|max:255',
@@ -93,8 +90,8 @@ class BuildingController extends Controller
                 return new BuildingResource(false, 400, 'Validasi gagal', null, $validator->errors());
             }
 
-            if ($request->has('regency_id')) {
-                $building->regency_id = $request->input('regency_id');
+            if ($request->has('regency')) {
+                $building->regency = $request->input('regency');
             }
             if ($request->has('name')) {
                 $building->name = $request->input('name');
@@ -110,8 +107,6 @@ class BuildingController extends Controller
             }
 
             $building->save();
-
-            $building->load('regency');
 
             return new BuildingResource(true, 200, 'Building berhasil diperbarui', $building);
 

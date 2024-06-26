@@ -52,4 +52,4 @@ Route::middleware(['auth:api'])->group(function () {
     Route::delete('buildings/image/{building_id}', [BuildingController::class, 'destroyImage']);
 });
 
-Route::get('/promosi', [PromotionController::class, 'index'])->name('promosi.show');
+Route::get('/promotion', [PromotionController::class, 'index'])->name('promosi.show');
